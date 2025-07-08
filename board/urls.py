@@ -1,14 +1,14 @@
 from django.urls import path
-
 from board import views
+from board.views import IndexView, BoardListView, BoardReadView, BoardRegistView, BoardEditView, BoardRemoveView
 
 app_name = 'board'
 
 urlpatterns = [
-  path('', views.index, name='index'),
-  path('list/', views.list, name='list'),
-  path('read/<int:id>/', views.read, name='read'),
-  path('regist/', views.regist, name='regist'),
-  path('edit/<int:id>/', views.edit, name='edit'),
-  path('remove/<int:id>/', views.remove, name='remove'),
+  path('', IndexView.as_view(), name='index'),
+  path('list/', BoardListView.as_view(), name='board_list'),
+  path('read/<int:id>/', BoardReadView.as_view(), name='board_read'),
+  path('register/', BoardRegistView.as_view(), name='board_regist'),
+  path('edit/<int:id>/', BoardEditView.as_view(), name='board_edit'),
+  path('remove/<int:id>/', BoardRemoveView.as_view(), name='board_remove'),
 ]

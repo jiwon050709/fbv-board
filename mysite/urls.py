@@ -16,8 +16,24 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+
+# Swagger 설정
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Board API 문서",
+        default_version='v1',
+        description="정지원 님의 Board API Swagger 문서입니다.",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('board/', include('board.urls')),
+    path('board/', include('board.urls')),  # 앱 URL 연결
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
