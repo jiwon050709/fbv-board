@@ -5,7 +5,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from .models import Board
+from comment.models import Comment
 from .serializers import BoardSerializer
+from comment.serializers import CommentSerializer
 
 
 class IndexView(APIView):
@@ -61,3 +63,30 @@ class BoardReadEditRemoveView(APIView):
             return Response({'message': 'Board deleted successfully'}, status=status.HTTP_200_OK)
         except Board.DoesNotExist:
             return Response({'error': 'Board not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class CommentListCreateView(APIView):
+    @swagger_auto_schema(responses={200: CommentSerializer(many=True)})
+    def get(self, request, board_id):
+        comments = Comment.objects.filter(board_id=board_id) 
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    @swagger_auto_schema(request_body=CommentSerializer,responses={201: CommentSerializer})
+    def post(self, request, board_id):
+        data = request.data.copy()
+        data['board'] = board_id
+        serializer = CommentSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class CommentDeleteView(APIView):
+    @swagger_auto_schema(operation_description="댓글 삭제", responses={204: 'No Content', 404: 'Not Found'})
+    def delete(self, request, board_id, id):
+        try:
+            comment = Comment.objects.get(pk=id)
+            comment.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Comment.DoesNotExist:
+            return Response({'error': 'Comment not found'}, status=status.HTTP_404_NOT_FOUND)
