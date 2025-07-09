@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'board.apps.BoardConfig', # 앱등록
     'rest_framework',
     'drf_yasg',
+    'comment',
 ]
 
 MIDDLEWARE = [

@@ -1,6 +1,5 @@
 # board/views.py
 from django.shortcuts import render, redirect, reverse
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,25 +12,13 @@ class IndexView(APIView):
     def get(self, request):
         return Response({'message': 'Index page'}, status=status.HTTP_200_OK)
 
-class BoardListView(APIView):
+class BoardListRegistView(APIView):
     @swagger_auto_schema(responses={200: BoardSerializer, 404: 'Board not found'})
     def get(self, request):
         boards = Board.objects.all().order_by('-id')
         serializer = BoardSerializer(boards, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-class BoardReadView(APIView):
-    @swagger_auto_schema(responses={200: BoardSerializer, 404: 'Board not found'})
-    def get(self, request, id):
-        try:
-            board = Board.objects.get(pk=id)
-            board.incrementReadCount()
-            serializer = BoardSerializer(board)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Board.DoesNotExist:
-            return Response({'error': 'Board not found'}, status=status.HTTP_404_NOT_FOUND)
-
-class BoardRegistView(APIView):
+    
     @swagger_auto_schema(request_body=BoardSerializer, responses={201: BoardSerializer, 404: 'Board not found'})
     def post(self, request):
         title = request.data.get('title')
@@ -43,7 +30,18 @@ class BoardRegistView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({'error': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
 
-class BoardEditView(APIView):
+
+class BoardReadEditRemoveView(APIView):
+    @swagger_auto_schema(responses={200: BoardSerializer, 404: 'Board not found'})
+    def get(self, request, id):
+        try:
+            board = Board.objects.get(pk=id)
+            board.incrementReadCount()
+            serializer = BoardSerializer(board)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Board.DoesNotExist:
+            return Response({'error': 'Board not found'}, status=status.HTTP_404_NOT_FOUND)
+        
     @swagger_auto_schema(request_body=BoardSerializer, responses={200: BoardSerializer, 404: 'Board not found'})
     def put(self, request, id):
         try:
@@ -55,8 +53,7 @@ class BoardEditView(APIView):
             return Response({'message': 'Board updated successfully'}, status=status.HTTP_200_OK)
         except Board.DoesNotExist:
             return Response({'error': 'Board not found'}, status=status.HTTP_404_NOT_FOUND)
-
-class BoardRemoveView(APIView):
+        
     def delete(self, request, id):
         try:
             board = Board.objects.get(pk=id)
