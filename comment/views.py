@@ -7,21 +7,24 @@ from .models import Comment
 from .serializers import CommentSerializer
 from drf_yasg.utils import swagger_auto_schema
 
-class CommentLisCreatetView(APIView):
+class CommentListCreateView(APIView):
     @swagger_auto_schema(responses={200: CommentSerializer(many=True)})
-    def get(self, request):
-        comments = Comment.objects.all()
+    def get(self, request, board_id):
+        comments = Comment.objects.filter(board_id=board_id)
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
-      
+
     @swagger_auto_schema(request_body=CommentSerializer)
-    def post(self, request):
-        serializer = CommentSerializer(data=request.data)
+    def post(self, request, board_id):
+        data = request.data.copy()
+        data['board'] = board_id  
+        serializer = CommentSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    
 class CommentDeleteView(APIView):
     @swagger_auto_schema(operation_description="댓글 삭제", responses={204: 'No Content', 404: 'Not Found'})
     def delete(self, request, id):
